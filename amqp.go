@@ -1,6 +1,9 @@
 package amqp
 
 import (
+	"math/rand"
+	"sync"
+
 	amqpDriver "github.com/streadway/amqp"
 	"go.k6.io/k6/js/modules"
 )
@@ -8,14 +11,14 @@ import (
 const version = "v0.0.1"
 
 type Amqp struct {
-	Version    string
-	Connection *amqpDriver.Connection
-	Queue     *Queue
-	Exchange  *Exchange
+	Version     string
+	Connections []*amqpDriver.Connection
+	Queue       *Queue
+	Exchange    *Exchange
 }
 
 type AmqpOptions struct {
-	ConnectionUrl string
+	ConnectionUrls []string
 }
 
 type PublishOptions struct {
@@ -49,15 +52,28 @@ type ListenOptions struct {
 }
 
 func (amqp *Amqp) Start(options AmqpOptions) error {
-	conn, err := amqpDriver.Dial(options.ConnectionUrl)
-	amqp.Connection = conn
-	amqp.Queue.Connection = conn
-	amqp.Exchange.Connection = conn
-	return err
+	amqp.Connections = make([]*amqpDriver.Connection, len(options.ConnectionUrls))
+
+	once := sync.Once{}
+	for i, url := range options.ConnectionUrls {
+		conn, err := amqpDriver.Dial(url)
+		if err != nil {
+			return err
+		}
+
+		amqp.Connections[i] = conn
+
+		once.Do(func() {
+			amqp.Queue.Connection = conn
+			amqp.Exchange.Connection = conn
+		})
+	}
+
+	return nil
 }
 
 func (amqp *Amqp) Publish(options PublishOptions) error {
-	ch, err := amqp.Connection.Channel()
+	ch, err := amqp.connection().Channel()
 	if err != nil {
 		return err
 	}
@@ -76,7 +92,7 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 }
 
 func (amqp *Amqp) Listen(options ListenOptions) error {
-	ch, err := amqp.Connection.Channel()
+	ch, err := amqp.connection().Channel()
 	if err != nil {
 		return err
 	}
@@ -103,12 +119,16 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 	return nil
 }
 
+func (amqp *Amqp) connection() *amqpDriver.Connection {
+	return amqp.Connections[rand.Intn(len(amqp.Connections))]
+}
+
 func init() {
 
 	queue := Queue{}
 	exchange := Exchange{}
 	generalAmqp := Amqp{
-		Version:   version,
+		Version:  version,
 		Queue:    &queue,
 		Exchange: &exchange,
 	}
