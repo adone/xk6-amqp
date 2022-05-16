@@ -22,11 +22,12 @@ type AmqpOptions struct {
 }
 
 type PublishOptions struct {
-	QueueName string
-	Body      string
-	Exchange  string
-	Mandatory bool
-	Immediate bool
+	QueueName  string
+	Body       string
+	Exchange   string
+	Mandatory  bool
+	Immediate  bool
+	Persistent bool
 }
 
 type ConsumeOptions struct {
@@ -79,15 +80,21 @@ func (amqp *Amqp) Publish(options PublishOptions) error {
 	}
 	defer ch.Close()
 
+	publishing := amqpDriver.Publishing{
+		ContentType: "text/plain",
+		Body:        []byte(options.Body),
+	}
+
+	if options.Persistent {
+		publishing.DeliveryMode = 2
+	}
+
 	return ch.Publish(
 		options.Exchange,
 		options.QueueName,
 		options.Mandatory,
 		options.Immediate,
-		amqpDriver.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(options.Body),
-		},
+		publishing,
 	)
 }
 
