@@ -10,8 +10,8 @@ const version = "v0.0.1"
 type Amqp struct {
 	Version    string
 	Connection *amqpDriver.Connection
-	Queue     *Queue
-	Exchange  *Exchange
+	Queue      *Queues
+	Exchange   *Exchanges
 }
 
 type AmqpOptions struct {
@@ -19,12 +19,12 @@ type AmqpOptions struct {
 }
 
 type PublishOptions struct {
-	QueueName string
-	Body      string
-	Exchange  string
+	QueueName   string
+	Body        string
+	Exchange    string
 	ContentType string
-	Mandatory bool
-	Immediate bool
+	Mandatory   bool
+	Immediate   bool
 }
 
 type ConsumeOptions struct {
@@ -106,15 +106,17 @@ func (amqp *Amqp) Listen(options ListenOptions) error {
 
 func init() {
 
-	queue := Queue{}
-	exchange := Exchange{}
-	generalAmqp := Amqp{
-		Version:   version,
-		Queue:    &queue,
-		Exchange: &exchange,
-	}
+	queue := Queues{}
+	exchange := Exchanges{}
+	// generalAmqp := Amqp{
+	// 	Version:  version,
+	// 	Queue:    &queue,
+	// 	Exchange: &exchange,
+	// }
 
-	modules.Register("k6/x/amqp", &generalAmqp)
+	module := New()
+
+	modules.Register("k6/x/amqp", module)
 	modules.Register("k6/x/amqp/queue", &queue)
 	modules.Register("k6/x/amqp/exchange", &exchange)
 }

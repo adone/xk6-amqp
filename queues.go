@@ -4,7 +4,7 @@ import (
 	amqpDriver "github.com/streadway/amqp"
 )
 
-type Queue struct {
+type Queues struct {
 	Version    string
 	Connection *amqpDriver.Connection
 }
@@ -37,7 +37,7 @@ type QueueUnindOptions struct {
 	Args         amqpDriver.Table
 }
 
-func (queue *Queue) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
+func (queue *Queues) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
@@ -53,7 +53,7 @@ func (queue *Queue) Declare(options DeclareOptions) (amqpDriver.Queue, error) {
 	)
 }
 
-func (queue *Queue) Inspect(name string) (amqpDriver.Queue, error) {
+func (queue *Queues) Inspect(name string) (amqpDriver.Queue, error) {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return amqpDriver.Queue{}, err
@@ -62,7 +62,7 @@ func (queue *Queue) Inspect(name string) (amqpDriver.Queue, error) {
 	return ch.QueueInspect(name)
 }
 
-func (queue *Queue) Delete(name string) error {
+func (queue *Queues) Delete(name string) error {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (queue *Queue) Delete(name string) error {
 	return err
 }
 
-func (queue *Queue) Bind(options QueueBindOptions) error {
+func (queue *Queues) Bind(options QueueBindOptions) error {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
@@ -92,7 +92,7 @@ func (queue *Queue) Bind(options QueueBindOptions) error {
 	)
 }
 
-func (queue *Queue) Unbind(options QueueUnindOptions) error {
+func (queue *Queues) Unbind(options QueueUnindOptions) error {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func (queue *Queue) Unbind(options QueueUnindOptions) error {
 	)
 }
 
-func (queue *Queue) Purge(name string, noWait bool) (int, error) {
+func (queue *Queues) Purge(name string, noWait bool) (int, error) {
 	ch, err := queue.Connection.Channel()
 	if err != nil {
 		return 0, err

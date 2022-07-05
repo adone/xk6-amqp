@@ -4,7 +4,7 @@ import (
 	amqpDriver "github.com/streadway/amqp"
 )
 
-type Exchange struct {
+type Exchanges struct {
 	Version    string
 	Connection *amqpDriver.Connection
 }
@@ -39,7 +39,7 @@ type ExchangeUnindOptions struct {
 	Args                    amqpDriver.Table
 }
 
-func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
+func (exchange *Exchanges) Declare(options ExchangeDeclareOptions) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (exchange *Exchange) Declare(options ExchangeDeclareOptions) error {
 	)
 }
 
-func (exchange *Exchange) Delete(name string) error {
+func (exchange *Exchanges) Delete(name string) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (exchange *Exchange) Delete(name string) error {
 	)
 }
 
-func (exchange *Exchange) Bind(options ExchangeBindOptions) error {
+func (exchange *Exchanges) Bind(options ExchangeBindOptions) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func (exchange *Exchange) Bind(options ExchangeBindOptions) error {
 	)
 }
 
-func (exchange *Exchange) Unbind(options ExchangeUnindOptions) error {
+func (exchange *Exchanges) Unbind(options ExchangeUnindOptions) error {
 	ch, err := exchange.Connection.Channel()
 	if err != nil {
 		return err
